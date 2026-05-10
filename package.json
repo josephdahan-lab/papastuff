@@ -1,0 +1,16 @@
+{
+  "name": "papastuff",
+  "version": "1.0.0",
+  "description": "PapaStuff - personal app launcher / landing page",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

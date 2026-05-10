@@ -1,0 +1,65 @@
+[
+  {
+    "id": "t1",
+    "name": "PapaStreams",
+    "url": "http://{host}:3000",
+    "icon": "music",
+    "logo": "https://www.plex.tv/wp-content/themes/plex-2020/images/header-logo.svg",
+    "color": "#e91e63"
+  },
+  {
+    "id": "t3",
+    "name": "Jellyfin",
+    "url": "http://{host}:8096",
+    "icon": "film",
+    "logo": "https://raw.githubusercontent.com/jellyfin/jellyfin/master/Logo.png",
+    "color": "#7c4dff"
+  },
+  {
+    "id": "t2",
+    "name": "Immich",
+    "url": "http://{host}:2283",
+    "icon": "photo",
+    "logo": "https://raw.githubusercontent.com/immich-app/immich/main/web/public/immich-logo.svg",
+    "color": "#4051b5"
+  },
+  {
+    "id": "t4",
+    "name": "PapaFrame",
+    "url": "http://josephpi4:8000",
+    "icon": "frame",
+    "logo": null,
+    "color": "#ff9800"
+  },
+  {
+    "id": "t5",
+    "name": "Transmission",
+    "url": "http://josephpi4:9091",
+    "icon": "download",
+    "logo": "https://raw.githubusercontent.com/transmission/transmission/main/web/src/index.html",
+    "color": "#009688"
+  },
+  {
+    "id": "t6",
+    "name": "Pi Connect",
+    "url": "https://connect.raspberrypi.com",
+    "icon": "pi",
+    "logo": "https://www.raspberrypi.com/app/uploads/2021/03/RPi-Logo-Stacked-Colour-Rounded-1.png",
+    "color": "#c51a4a"
+  },
+  {
+    "id": "t7",
+    "name": "Roadtrekker",
+    "url": "https://www.youtube.com/@therealroadtrekker",
+    "icon": "youtube",
+    "logo": "https://www.youtube.com/favicon.ico",
+    "color": "#ff0000"
+  },
+  {
+    "id": "tmotlci95yiwy",
+    "name": "Google photos",
+    "url": "https://photos.google.com/",
+    "color": "#4051b5",
+    "icon": "photo"
+  }
+]

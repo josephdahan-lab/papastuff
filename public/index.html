@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PapaStuff</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h1 class="brand"><span class="brand-papa">Papa</span><span class="brand-stuff">Stuff</span></h1>
+    <div class="actions">
+      <a id="tailscale-link"
+         class="icon-btn tailscale-link"
+         href="https://login.tailscale.com/admin/machines"
+         target="_blank"
+         rel="noopener"
+         title="Tailscale admin">
+        <svg class="tailscale-logo" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="4"  cy="4"  r="2" class="ts-dot ts-on" />
+          <circle cx="12" cy="4"  r="2" class="ts-dot ts-on" />
+          <circle cx="20" cy="4"  r="2" class="ts-dot ts-off" />
+          <circle cx="4"  cy="12" r="2" class="ts-dot ts-off" />
+          <circle cx="12" cy="12" r="2" class="ts-dot ts-on" />
+          <circle cx="20" cy="12" r="2" class="ts-dot ts-on" />
+          <circle cx="4"  cy="20" r="2" class="ts-dot ts-on" />
+          <circle cx="12" cy="20" r="2" class="ts-dot ts-off" />
+          <circle cx="20" cy="20" r="2" class="ts-dot ts-on" />
+        </svg>
+        <span>Tailscale</span>
+      </a>
+      <button id="theme-btn" class="icon-btn" title="Toggle light / dark mode">🌙</button>
+      <button id="add-btn"  class="icon-btn" title="Add tile" hidden>+ Add</button>
+      <button id="watchdog-btn" class="icon-btn" title="Watchdog status">🔧</button>
+      <button id="edit-btn" class="icon-btn" title="Toggle edit mode">Edit</button>
+    </div>
+  </header>
+
+  <section class="clocks" id="clocks">
+    <div class="clock" data-tz="America/Los_Angeles">
+      <p class="clock-city">Seattle</p>
+      <p class="clock-time">--:--:--</p>
+      <p class="clock-date">--</p>
+    </div>
+    <div class="clock" data-tz="America/New_York">
+      <p class="clock-city">New York</p>
+      <p class="clock-time">--:--:--</p>
+      <p class="clock-date">--</p>
+    </div>
+    <div class="clock" data-tz="Europe/Paris">
+      <p class="clock-city">Marseille</p>
+      <p class="clock-time">--:--:--</p>
+      <p class="clock-date">--</p>
+    </div>
+  </section>
+
+  <main>
+    <div id="grid" class="grid"></div>
+
+    <section class="server-status-section">
+      <div class="section-header">
+        <div>
+          <p class="section-label">Linux servers</p>
+          <h2>Server performance</h2>
+        </div>
+      </div>
+      <div id="servers" class="server-grid"></div>
+    </section>
+  </main>
+
+  <!-- Add / Edit tile dialog -->
+  <dialog id="tile-dialog">
+    <form method="dialog" id="tile-form">
+      <h2 id="dialog-title">Add tile</h2>
+      <label>Name<input name="name" required maxlength="40" /></label>
+      <label>URL<input name="url" type="url" required placeholder="https://example.com" /></label>
+      <label>Color<input name="color" type="color" value="#4051b5" /></label>
+      <label>Icon
+        <select name="icon">
+          <option value="link">Link</option>
+          <option value="music">Music</option>
+          <option value="photo">Photo</option>
+          <option value="film">Film</option>
+          <option value="frame">Frame</option>
+          <option value="download">Download</option>
+          <option value="pi">Pi</option>
+          <option value="youtube">YouTube</option>
+          <option value="globe">Globe</option>
+          <option value="terminal">Terminal</option>
+          <option value="cloud">Cloud</option>
+          <option value="server">Server</option>
+        </select>
+      </label>
+      <p class="hint">Tip: use <code>{host}</code> in the URL to substitute the current hostname (e.g. <code>http://{host}:3000</code>).</p>
+      <div class="dialog-actions">
+        <button value="cancel" type="button" id="cancel-btn">Cancel</button>
+        <button value="save"   type="submit" id="save-btn" class="primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Watchdog instructions dialog -->
+  <dialog id="watchdog-dialog">
+    <form method="dialog" id="watchdog-form">
+      <h2>Watchdog Instructions</h2>
+      <div class="watchdog-content">
+        <h3>Check status</h3>
+        <code>sudo systemctl status papastream-watchdog</code>
+
+        <h3>View logs</h3>
+        <code>sudo journalctl -u papastream-watchdog -f</code>
+
+        <h3>Stop the watchdog</h3>
+        <code>sudo systemctl stop papastream-watchdog</code>
+
+        <h3>Restart the watchdog</h3>
+        <code>sudo systemctl restart papastream-watchdog</code>
+      </div>
+      <div class="dialog-actions">
+        <button value="cancel" type="submit" id="watchdog-close-btn">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/app.js"></script>
+</body>
+</html>
