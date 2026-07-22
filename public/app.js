@@ -15,56 +15,8 @@ let editing = false;
 let editingId = null;
 let dragSrc = null;
 
-const SERVERS = [
-  {
-    host: 'hpenvy',
-    role: 'Main media + photo server',
-    model: 'HP Envy desktop',
-    os: 'Ubuntu 24.04 LTS',
-    kernel: 'Linux 6.8',
-    ip: '192.168.1.20',
-    services: 'Plex · Jellyfin · Immich',
-    status: 'Online',
-    uptime: '12 days',
-    cpu: '14%',
-    memory: '41%',
-    disk: '28%',
-    load: '0.32',
-    fact: 'The HP Envy line debuted in 2009 — originally HP\'s answer to the MacBook Pro before becoming a desktop family.'
-  },
-  {
-    host: 'josephpi4',
-    role: 'Edge node · downloads · digital frame',
-    model: 'Raspberry Pi 4 Model B (8 GB)',
-    os: 'Raspberry Pi OS Bookworm',
-    kernel: 'Linux 6.6',
-    ip: '192.168.1.21',
-    services: 'Transmission · PapaFrame',
-    status: 'Online',
-    uptime: '7 days',
-    cpu: '9%',
-    memory: '35%',
-    disk: '44%',
-    load: '0.21',
-    fact: 'The Raspberry Pi 4 was the first Pi capable of driving two 4K displays at once — a leap from the Pi 3\'s single 1080p output.'
-  },
-  {
-    host: 'pictureframejd',
-    role: 'Digital picture frame',
-    model: 'Raspberry Pi',
-    os: 'Raspberry Pi OS Bookworm',
-    kernel: 'Linux 6.6',
-    ip: '192.168.1.22',
-    services: 'PictureFrame',
-    status: 'Online',
-    uptime: '—',
-    cpu: '—',
-    memory: '—',
-    disk: '—',
-    load: '—',
-    fact: 'The first commercial digital picture frame, the Sony CyberFrame, launched in 2000 — it held a whopping 6 photos.'
-  }
-];
+let SERVERS = [];
+const SERVERS_REFRESH_MS = 30000;
 
 const FUN_FACTS = {
   PapaStreams:   'Plex began in 2007 as an unofficial port of XBMC Media Center for Mac — the name is a play on "personal media library."',
@@ -103,6 +55,16 @@ async function loadTiles() {
   const res = await fetch('/api/tiles');
   tiles = await res.json();
   render();
+}
+
+async function loadServers() {
+  try {
+    const res = await fetch('/api/servers');
+    SERVERS = await res.json();
+  } catch {
+    SERVERS = [];
+  }
+  renderServers();
 }
 
 async function saveTiles() {
@@ -148,7 +110,6 @@ function renderServers() {
 }
 
 function render() {
-  renderServers();
   grid.innerHTML = '';
   for (const t of tiles) {
     const a = document.createElement('a');
@@ -338,4 +299,5 @@ updateClocks();
 setInterval(updateClocks, 1000);
 
 loadTiles();
-renderServers();
+loadServers();
+setInterval(loadServers, SERVERS_REFRESH_MS);
