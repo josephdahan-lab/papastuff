@@ -34,7 +34,7 @@
   {
     "id": "t5",
     "name": "Transmission",
-    "url": "http://josephpi4:9091",
+    "url": "http://hpenvy:9091",
     "icon": "download",
     "logo": "https://raw.githubusercontent.com/transmission/transmission/main/web/src/index.html",
     "color": "#009688"
@@ -61,5 +61,33 @@
     "url": "https://photos.google.com/",
     "color": "#4051b5",
     "icon": "photo"
+  },
+  {
+    "id": "t8",
+    "name": "PapaMonitor (hpenvy)",
+    "url": "http://hpenvy:8088",
+    "icon": "server",
+    "color": "#2196f3"
+  },
+  {
+    "id": "t9",
+    "name": "PapaMonitor (josephpi4)",
+    "url": "http://josephpi4:8088",
+    "icon": "server",
+    "color": "#2196f3"
+  },
+  {
+    "id": "t10",
+    "name": "PapaMonitor (pictureframedidier2)",
+    "url": "http://pictureframedidier2:8088",
+    "icon": "server",
+    "color": "#2196f3"
+  },
+  {
+    "id": "tmrbnujbv1ir1",
+    "name": "papabackup",
+    "url": "http://hpenvy:9999",
+    "color": "#4051b5",
+    "icon": "link"
   }
 ]

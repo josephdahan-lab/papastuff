@@ -11,6 +11,13 @@ const GLANCES_TIMEOUT_MS = 2500;
 
 const SERVERS_CONFIG = [
   {
+    host: 'precision',
+    role: 'Home server · photos · NAS',
+    model: 'Dell Precision 3630 Tower',
+    services: 'Immich · Jellyfin · PapaStreams · PapaStuff',
+    fact: 'Dell launched the Precision workstation line in 1997, aimed at engineers and 3D designers who needed more than a desktop PC.'
+  },
+  {
     host: 'hpenvy',
     role: 'Main media + photo server',
     model: 'HP Envy desktop',
