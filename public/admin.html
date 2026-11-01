@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PapaStuff Admin</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%235b6eea'/><text x='50' y='68' font-size='58' font-weight='bold' font-family='Arial,sans-serif' fill='white' text-anchor='middle'>PS</text></svg>">
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    main { max-width: 900px; }
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .card-head h2 { margin: 0; font-size: 20px; }
+    .card-sub { margin: 4px 0 0; font-size: 13px; color: var(--text-muted); }
+    .app-list { display: flex; flex-direction: column; gap: 14px; }
+    .app-row {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--tile-radius);
+      padding: 16px 18px;
+    }
+    .app-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .app-name { font-weight: 700; font-size: 17px; color: var(--text); text-decoration: none; }
+    .app-name:hover { text-decoration: underline; }
+    .app-actions { display: flex; align-items: center; gap: 10px; }
+    .app-versions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .ver-box {
+      background: var(--inner-bg);
+      border: 1px solid var(--inner-border);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .ver-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 600; }
+    .ver-val { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; font-size: 18px; font-weight: 700; margin-top: 4px; }
+    .ver-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; overflow-wrap: anywhere; line-height: 1.4; }
+    .pill {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+      color: #fff;
+    }
+    .pill.ok     { background: #2e7d32; }
+    .pill.update { background: #b26a00; }
+    .pill.warn   { background: #b71c1c; }
+    .app-incoming {
+      margin: 12px 0 0;
+      padding-left: 18px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+      line-height: 1.5;
+    }
+    .app-note { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+    .icon-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .icon-btn.primary:hover { background: var(--accent-hover); }
+    .icon-btn:disabled { opacity: 0.55; cursor: default; }
+    .status-msg {
+      font-size: 13px;
+      margin-top: 12px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+    }
+    .status-msg[hidden] { display: none; }
+    .status-msg.ok  { background: rgba(46, 160, 67, 0.15); color: #3fb950; border: 1px solid rgba(46, 160, 67, 0.3); }
+    .status-msg.err { background: rgba(214, 59, 59, 0.15); color: var(--danger); border: 1px solid rgba(214, 59, 59, 0.3); }
+    @media (max-width: 560px) {
+      .app-versions { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 class="brand"><span class="brand-papa">Papa</span><span class="brand-stuff">Stuff</span> <span style="font-weight:300;font-size:18px;opacity:0.7">Admin</span></h1>
+    <div class="actions">
+      <a href="/" class="icon-btn">← Back</a>
+      <button id="theme-btn" class="icon-btn" title="Toggle light / dark mode">🌙</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="card-head">
+      <div>
+        <p class="section-label">GitHub</p>
+        <h2>Applications</h2>
+        <p class="card-sub">Installed on <span id="apps-host">this machine</span>, compared with the latest version on GitHub</p>
+      </div>
+      <button id="check-updates" class="icon-btn">Check for updates</button>
+    </div>
+    <div id="app-list" class="app-list">Checking GitHub…</div>
+  </main>
+
+  <script>
+    const themeBtn = document.getElementById('theme-btn');
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      themeBtn.textContent = theme === 'light' ? '☀️' : '🌙';
+    }
+    const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    applyTheme(localStorage.getItem('papastuff-theme') || (prefersLight ? 'light' : 'dark'));
+    themeBtn.addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+      applyTheme(next);
+      localStorage.setItem('papastuff-theme', next);
+    });
+
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function verBox(label, v) {
+      const when = v.date ? new Date(v.date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+      return `<div class="ver-box">
+        <div class="ver-label">${label}</div>
+        <div class="ver-val">${esc(v.version || v.commit || '—')}</div>
+        <div class="ver-meta">${esc(v.commit || '')}${when ? ' · ' + esc(when) : ''}${v.subject ? '<br>' + esc(v.subject) : ''}</div>
+      </div>`;
+    }
+
+    function statusPill(a) {
+      if (a.error) return '<span class="pill warn">Error</span>';
+      if (a.ahead > 0 && a.behind > 0) return '<span class="pill warn">Diverged</span>';
+      if (a.behind > 0) return `<span class="pill update">${a.behind} update${a.behind === 1 ? '' : 's'}</span>`;
+      if (a.ahead > 0) return `<span class="pill warn">${a.ahead} unpushed</span>`;
+      return '<span class="pill ok">Up to date</span>';
+    }
+
+    function renderApps(data) {
+      document.getElementById('apps-host').textContent = data.host;
+      const list = document.getElementById('app-list');
+      list.innerHTML = '';
+      for (const a of data.apps) {
+        const notes = [];
+        if (a.error) notes.push(a.error);
+        if (a.fetchError) notes.push('Could not reach GitHub: ' + a.fetchError);
+        if (a.ahead > 0) notes.push(`This copy has ${a.ahead} commit(s) that are not on GitHub, so it can't be upgraded from here.`);
+        if (a.localChanges > 0) notes.push(`${a.localChanges} file(s) edited locally (usually data files) — kept unless an update changes them.`);
+
+        const row = document.createElement('div');
+        row.className = 'app-row';
+        row.innerHTML = `
+          <div class="app-top">
+            <a class="app-name" href="${esc(a.repoUrl || '#')}" target="_blank" rel="noopener">${esc(a.name)}</a>
+            <div class="app-actions">
+              ${statusPill(a)}
+              ${a.behind > 0 ? `<button class="icon-btn primary upgrade-btn"${a.canUpgrade ? '' : ' disabled'}>${a.upgrading ? 'Upgrading…' : 'Upgrade'}</button>` : ''}
+            </div>
+          </div>
+          ${a.error ? '' : `<div class="app-versions">${verBox('Current (installed)', a.current)}${verBox('Latest (GitHub)', a.latest)}</div>`}
+          ${a.incoming?.length ? `<ul class="app-incoming">${a.incoming.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}
+          ${notes.map(n => `<div class="app-note">${esc(n)}</div>`).join('')}
+          <div class="status-msg" hidden></div>`;
+        const btn = row.querySelector('.upgrade-btn');
+        if (btn) btn.addEventListener('click', () => upgradeApp(a, btn, row.querySelector('.status-msg')));
+        list.appendChild(row);
+      }
+    }
+
+    async function loadApps(fetchRemote = true) {
+      const btn = document.getElementById('check-updates');
+      btn.disabled = true;
+      btn.textContent = 'Checking…';
+      try {
+        const res = await fetch('/api/admin/apps' + (fetchRemote ? '' : '?fetch=0'));
+        renderApps(await res.json());
+      } catch (err) {
+        document.getElementById('app-list').textContent = 'Could not load applications: ' + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Check for updates';
+      }
+    }
+
+    async function upgradeApp(a, btn, msg) {
+      const from = a.current.version || a.current.commit;
+      const to = a.latest.version || a.latest.commit;
+      if (!confirm(`Upgrade ${a.name} from ${from} to ${to} and restart ${a.services.join(', ')}?`)) return;
+      btn.disabled = true;
+      btn.textContent = 'Upgrading…';
+      let result;
+      try {
+        const res = await fetch(`/api/admin/apps/${a.id}/upgrade`, { method: 'POST' });
+        result = await res.json();
+      } catch (err) {
+        result = { error: err.message };
+      }
+      msg.hidden = false;
+      msg.className = 'status-msg ' + (result.ok ? 'ok' : 'err');
+      msg.textContent = [...(result.steps || []), result.error].filter(Boolean).join('\n');
+      if (!result.ok) { btn.disabled = false; btn.textContent = 'Upgrade'; return; }
+      // PapaStuff restarting itself needs a few seconds before the page can reload
+      if (a.id === 'papastuff') setTimeout(() => location.reload(), 5000);
+      else setTimeout(() => loadApps(false), 1500);
+    }
+
+    document.getElementById('check-updates').addEventListener('click', () => loadApps(true));
+    loadApps();
+  </script>
+</body>
+</html>

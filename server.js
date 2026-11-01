@@ -1,7 +1,10 @@
 import express from 'express';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execFile, spawn } from 'child_process';
+import { promisify } from 'util';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '80', 10);
@@ -198,6 +201,135 @@ app.get('/api/servers', async (req, res) => {
     }
   }));
   res.json(results);
+});
+
+/* ---------- Admin: application upgrades from GitHub ---------- */
+
+const execFileP = promisify(execFile);
+const HOME = os.homedir();
+
+// Apps installed on this machine: repo folder, folder holding package.json (null = none), and systemd units to restart.
+const APPS = [
+  { id: 'papastuff',     name: 'PapaStuff',     dir: __dirname,                         npmDir: '',       services: ['papastuff'] },
+  { id: 'papastreams',   name: 'PapaStreams',   dir: path.join(HOME, 'papastreams'),   npmDir: 'server', services: ['papastreams'] },
+  { id: 'papabackup',    name: 'PapaBackup',    dir: path.join(HOME, 'papabackup'),    npmDir: null,     services: ['papabackup'] },
+  { id: 'papabookmarks', name: 'PapaBookmarks', dir: path.join(HOME, 'papabookmarks'), npmDir: '',       services: ['papabookmarks'] },
+  { id: 'papamonitor',   name: 'PapaMonitor',   dir: path.join(HOME, 'papamonitor'),   npmDir: null,     services: ['papamonitor', 'papamonitor-web'] }
+];
+
+const upgrading = new Set();
+
+async function git(app, args, timeout = 30000) {
+  const { stdout } = await execFileP('git', [
+    '-C', app.dir,
+    '-c', 'credential.helper=',
+    '-c', 'credential.helper=!gh auth git-credential',
+    ...args
+  ], { timeout, maxBuffer: 4 * 1024 * 1024 });
+  return stdout.trim();
+}
+
+async function gitOr(app, args, fallback = null) {
+  try { return await git(app, args); } catch { return fallback; }
+}
+
+async function versionAt(app, ref) {
+  let pkgVersion = null;
+  if (app.npmDir !== null) {
+    const pkg = await gitOr(app, ['show', `${ref}:${app.npmDir ? app.npmDir + '/' : ''}package.json`]);
+    if (pkg) {
+      try { pkgVersion = JSON.parse(pkg).version || null; } catch { /* ignore */ }
+    }
+  }
+  const tag = await gitOr(app, ['describe', '--tags', '--abbrev=0', ref]);
+  const [commit, date, subject] = (await gitOr(app, ['log', '-1', '--format=%h%x09%cI%x09%s', ref], '')).split('\t');
+  const version = pkgVersion ? `v${pkgVersion.replace(/^v/, '')}` : (tag || null);
+  return { version, commit: commit || null, date: date || null, subject: subject || null };
+}
+
+async function appStatus(app, { fetch = true } = {}) {
+  const base = { id: app.id, name: app.name, services: app.services, upgrading: upgrading.has(app.id) };
+  if (!fs.existsSync(path.join(app.dir, '.git'))) return { ...base, error: 'not a git checkout' };
+  try {
+    const branch = await git(app, ['rev-parse', '--abbrev-ref', 'HEAD']);
+    const upstream = await gitOr(app, ['rev-parse', '--abbrev-ref', '@{u}'], `origin/${branch}`);
+    let fetchError = null;
+    if (fetch) {
+      try { await git(app, ['fetch', '--quiet', '--tags', 'origin'], 20000); }
+      catch (err) { fetchError = (err.stderr || err.message).trim().split('\n').pop(); }
+    }
+    // rev-list prints "<only in HEAD> <only in upstream>"
+    const [ahead, behind] = (await git(app, ['rev-list', '--left-right', '--count', `HEAD...${upstream}`])).split(/\s+/).map(Number);
+    const incoming = behind > 0
+      ? (await git(app, ['log', '--format=%h %s', `HEAD..${upstream}`, '-n', '15'])).split('\n').filter(Boolean)
+      : [];
+    const localChanges = (await git(app, ['status', '--porcelain', '--untracked-files=no'])).split('\n').filter(Boolean).length;
+    const remoteUrl = await gitOr(app, ['remote', 'get-url', 'origin'], '');
+    return {
+      ...base, branch, upstream, fetchError,
+      repoUrl: remoteUrl.replace(/\.git$/, '').replace(/^git@github\.com:/, 'https://github.com/'),
+      current: await versionAt(app, 'HEAD'),
+      latest: await versionAt(app, upstream),
+      behind, ahead, incoming, localChanges,
+      canUpgrade: behind > 0 && ahead === 0 && !upgrading.has(app.id)
+    };
+  } catch (err) {
+    return { ...base, error: (err.stderr || err.message).trim() };
+  }
+}
+
+app.get('/api/admin/apps', async (req, res) => {
+  const fetch = req.query.fetch !== '0';
+  res.json({ host: os.hostname(), apps: await Promise.all(APPS.map(a => appStatus(a, { fetch }))) });
+});
+
+app.post('/api/admin/apps/:id/upgrade', async (req, res) => {
+  const target = APPS.find(a => a.id === req.params.id);
+  if (!target) return res.status(404).json({ error: 'unknown app' });
+  if (upgrading.has(target.id)) return res.status(409).json({ error: 'upgrade already running' });
+
+  upgrading.add(target.id);
+  const steps = [];
+  try {
+    const status = await appStatus(target);
+    if (status.error) throw new Error(status.error);
+    if (status.ahead > 0) throw new Error(`this copy has ${status.ahead} local commit(s) not on GitHub — push or reset them first`);
+    if (status.behind === 0) return res.json({ ok: true, steps: ['Already up to date'] });
+
+    const before = await git(target, ['rev-parse', 'HEAD']);
+    try {
+      await git(target, ['merge', '--ff-only', status.upstream]);
+    } catch (err) {
+      throw new Error(`git refused the update (local edits to files this update changes?): ${(err.stderr || err.message).trim()}`);
+    }
+    steps.push(`Updated ${status.current.commit} → ${status.latest.commit} (${status.behind} commit${status.behind === 1 ? '' : 's'})`);
+
+    const changed = (await git(target, ['diff', '--name-only', before, 'HEAD'])).split('\n').filter(Boolean);
+    if (target.npmDir !== null) {
+      const prefix = target.npmDir ? `${target.npmDir}/` : '';
+      if (changed.some(f => f === `${prefix}package.json` || f === `${prefix}package-lock.json`)) {
+        await execFileP('npm', ['install', '--omit=dev', '--no-audit', '--no-fund'],
+          { cwd: path.join(target.dir, target.npmDir), timeout: 300000, maxBuffer: 8 * 1024 * 1024 });
+        steps.push('Installed npm dependencies');
+      }
+    }
+    if (changed.some(f => f.endsWith('requirements.txt'))) steps.push('⚠ requirements.txt changed — install Python packages by hand');
+    if (changed.some(f => /\.(service|timer)$/.test(f))) steps.push('⚠ systemd unit files changed — copy them to /etc/systemd/system and run daemon-reload');
+
+    if (target.dir === __dirname) {
+      // Restarting ourselves: answer first, then restart from a detached process.
+      spawn('sh', ['-c', `sleep 1; sudo -n systemctl restart ${target.services.join(' ')}`], { detached: true, stdio: 'ignore' }).unref();
+      steps.push(`Restarting ${target.services.join(', ')} — this page will reload in a few seconds`);
+    } else {
+      await execFileP('sudo', ['-n', 'systemctl', 'restart', ...target.services], { timeout: 60000 });
+      steps.push(`Restarted ${target.services.join(', ')}`);
+    }
+    res.json({ ok: true, steps });
+  } catch (err) {
+    res.status(500).json({ error: err.message, steps });
+  } finally {
+    upgrading.delete(target.id);
+  }
 });
 
 app.listen(PORT, () => {
