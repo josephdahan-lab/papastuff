@@ -6,40 +6,51 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '80', 10);
 const TILES_FILE = path.join(__dirname, 'tiles.json');
+const SERVERS_FILE = path.join(__dirname, 'servers.json');
 const GLANCES_PORT = 61208;
 const GLANCES_TIMEOUT_MS = 2500;
 
-const SERVERS_CONFIG = [
+const DEFAULT_SERVERS = [
   {
+    id: 's-precision',
     host: 'precision',
+    image: '/img/photos/precision.jpg',
     role: 'Home server · photos · NAS',
     model: 'Dell Precision 3630 Tower',
     services: 'Immich · Jellyfin · PapaStreams · PapaStuff',
     fact: 'Dell launched the Precision workstation line in 1997, aimed at engineers and 3D designers who needed more than a desktop PC.'
   },
   {
+    id: 's-hpenvy',
     host: 'hpenvy',
+    image: '/img/photos/hpenvy.jpg',
     role: 'Main media + photo server',
     model: 'HP Envy desktop',
     services: 'Plex · Jellyfin · Immich',
     fact: 'The HP Envy line debuted in 2009 — originally HP\'s answer to the MacBook Pro before becoming a desktop family.'
   },
   {
+    id: 's-josephpi4',
     host: 'josephpi4',
+    image: '/img/photos/pi4-board.jpg',
     role: 'Edge node · downloads · digital frame',
     model: 'Raspberry Pi 4 Model B (8 GB)',
     services: 'Transmission · PapaFrame',
     fact: 'The Raspberry Pi 4 was the first Pi capable of driving two 4K displays at once — a leap from the Pi 3\'s single 1080p output.'
   },
   {
+    id: 's-pictureframejd',
     host: 'pictureframejd',
+    image: '/img/photos/papaframe.jpg',
     role: 'Digital picture frame',
     model: 'Raspberry Pi',
     services: 'PictureFrame',
     fact: 'The first commercial digital picture frame, the Sony CyberFrame, launched in 2000 — it held a whopping 6 photos.'
   },
   {
+    id: 's-pictureframedidier2',
     host: 'pictureframedidier2',
+    image: '/img/photos/pictureframe.jpg',
     role: 'Digital picture frame',
     model: 'Raspberry Pi',
     services: 'PictureFrame',
@@ -72,6 +83,23 @@ function loadTiles() {
 
 function saveTiles(tiles) {
   fs.writeFileSync(TILES_FILE, JSON.stringify(tiles, null, 2));
+}
+
+function loadServersConfig() {
+  try {
+    if (!fs.existsSync(SERVERS_FILE)) {
+      fs.writeFileSync(SERVERS_FILE, JSON.stringify(DEFAULT_SERVERS, null, 2));
+      return DEFAULT_SERVERS;
+    }
+    return JSON.parse(fs.readFileSync(SERVERS_FILE, 'utf8'));
+  } catch (err) {
+    console.error('Failed to load servers:', err);
+    return DEFAULT_SERVERS;
+  }
+}
+
+function saveServersConfig(servers) {
+  fs.writeFileSync(SERVERS_FILE, JSON.stringify(servers, null, 2));
 }
 
 const app = express();
@@ -148,8 +176,20 @@ function buildServer(cfg, data) {
   };
 }
 
+app.get('/api/servers/config', (req, res) => {
+  res.json(loadServersConfig());
+});
+
+app.put('/api/servers/config', (req, res) => {
+  if (!Array.isArray(req.body) || !req.body.every(s => s && typeof s.host === 'string' && s.host.trim())) {
+    return res.status(400).json({ error: 'expected array of servers with a host' });
+  }
+  saveServersConfig(req.body);
+  res.json({ ok: true });
+});
+
 app.get('/api/servers', async (req, res) => {
-  const results = await Promise.all(SERVERS_CONFIG.map(async (cfg) => {
+  const results = await Promise.all(loadServersConfig().map(async (cfg) => {
     try {
       const data = await fetchGlances(cfg);
       return buildServer(cfg, data);

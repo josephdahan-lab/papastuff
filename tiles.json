@@ -4,24 +4,27 @@
     "name": "PapaStreams",
     "url": "http://{host}:3000",
     "icon": "music",
-    "logo": "https://www.plex.tv/wp-content/themes/plex-2020/images/header-logo.svg",
-    "color": "#e91e63"
+    "logo": null,
+    "color": "#e91e63",
+    "image": "/img/photos/papastreams.jpg"
   },
   {
     "id": "t3",
     "name": "Jellyfin",
     "url": "http://{host}:8096",
     "icon": "film",
-    "logo": "https://raw.githubusercontent.com/jellyfin/jellyfin/master/Logo.png",
-    "color": "#7c4dff"
+    "logo": "/img/jellyfin.svg",
+    "color": "#7c4dff",
+    "image": "/img/photos/jellyfin.jpg"
   },
   {
     "id": "t2",
     "name": "Immich",
     "url": "http://{host}:2283",
     "icon": "photo",
-    "logo": "https://raw.githubusercontent.com/immich-app/immich/main/web/public/immich-logo.svg",
-    "color": "#4051b5"
+    "logo": "/img/immich.svg",
+    "color": "#4051b5",
+    "image": "/img/photos/immich.jpg"
   },
   {
     "id": "t4",
@@ -29,65 +32,88 @@
     "url": "http://josephpi4:8000",
     "icon": "frame",
     "logo": null,
-    "color": "#ff9800"
+    "color": "#ff9800",
+    "image": "/img/photos/papaframe.jpg"
   },
   {
     "id": "t5",
     "name": "Transmission",
     "url": "http://hpenvy:9091",
     "icon": "download",
-    "logo": "https://raw.githubusercontent.com/transmission/transmission/main/web/src/index.html",
-    "color": "#009688"
+    "logo": "/img/transmission.svg",
+    "color": "#009688",
+    "image": "/img/photos/transmission.jpg"
   },
   {
     "id": "t6",
     "name": "Pi Connect",
     "url": "https://connect.raspberrypi.com",
     "icon": "pi",
-    "logo": "https://www.raspberrypi.com/app/uploads/2021/03/RPi-Logo-Stacked-Colour-Rounded-1.png",
-    "color": "#c51a4a"
+    "logo": "/img/raspberrypi.svg",
+    "color": "#c51a4a",
+    "image": "/img/photos/piconnect.jpg"
   },
   {
     "id": "t7",
     "name": "Roadtrekker",
     "url": "https://www.youtube.com/@therealroadtrekker",
     "icon": "youtube",
-    "logo": "https://www.youtube.com/favicon.ico",
-    "color": "#ff0000"
+    "logo": "/img/youtube.svg",
+    "color": "#ff0000",
+    "image": "/img/photos/roadtrekker.jpg"
   },
   {
     "id": "tmotlci95yiwy",
     "name": "Google photos",
     "url": "https://photos.google.com/",
     "color": "#4051b5",
-    "icon": "photo"
+    "icon": "photo",
+    "image": "/img/photos/googlephotos.jpg",
+    "logo": "/img/googlephotos.svg"
   },
   {
     "id": "t8",
     "name": "PapaMonitor (hpenvy)",
     "url": "http://hpenvy:8088",
     "icon": "server",
-    "color": "#2196f3"
+    "color": "#2196f3",
+    "image": "/img/photos/datacenter.jpg",
+    "logo": null
   },
   {
     "id": "t9",
     "name": "PapaMonitor (josephpi4)",
     "url": "http://josephpi4:8088",
     "icon": "server",
-    "color": "#2196f3"
+    "color": "#2196f3",
+    "image": "/img/photos/pi4.jpg",
+    "logo": null
   },
   {
     "id": "t10",
     "name": "PapaMonitor (pictureframedidier2)",
     "url": "http://pictureframedidier2:8088",
     "icon": "server",
-    "color": "#2196f3"
+    "color": "#2196f3",
+    "image": "/img/photos/pictureframe.jpg",
+    "logo": null
   },
   {
     "id": "tmrbnujbv1ir1",
     "name": "papabackup",
     "url": "http://precision:9999",
     "color": "#4051b5",
-    "icon": "link"
+    "icon": "link",
+    "image": "/img/photos/harddrive.jpg",
+    "logo": null
+  },
+  {
+    "id": "tmvwknz5esisi",
+    "name": "Maxistreams",
+    "url": "http://100.88.249.69/#channels",
+    "color": "#59b540",
+    "icon": "film",
+    "image": "/img/photos/livingroom.jpg",
+    "logo": null
   }
 ]

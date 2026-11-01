@@ -9,6 +9,11 @@ const cancelBtn = document.getElementById('cancel-btn');
 const dialogTitle = document.getElementById('dialog-title');
 const watchdogDialog = document.getElementById('watchdog-dialog');
 const watchdogCloseBtn = document.getElementById('watchdog-close-btn');
+const addServerBtn = document.getElementById('add-server-btn');
+const serverDialog = document.getElementById('server-dialog');
+const serverForm = document.getElementById('server-form');
+const serverDialogTitle = document.getElementById('server-dialog-title');
+const serverCancelBtn = document.getElementById('server-cancel-btn');
 
 let tiles = [];
 let editing = false;
@@ -16,6 +21,8 @@ let editingId = null;
 let dragSrc = null;
 
 let SERVERS = [];
+let serverConfig = [];
+let editingServerId = null;
 const SERVERS_REFRESH_MS = 30000;
 
 const FUN_FACTS = {
@@ -47,6 +54,14 @@ const ICONS = {
   server:   '<rect x="3" y="3" width="18" height="7" rx="1"/><rect x="3" y="14" width="18" height="7" rx="1"/><circle cx="7" cy="6.5" r="0.8" fill="#fff"/><circle cx="7" cy="17.5" r="0.8" fill="#fff"/>'
 };
 
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function cssUrl(url) {
+  return `url("${String(url).replace(/["\\\n]/g, '')}")`;
+}
+
 function expandUrl(url) {
   return url.replace(/\{host\}/g, location.hostname || 'localhost');
 }
@@ -75,6 +90,20 @@ async function saveTiles() {
   });
 }
 
+async function loadServerConfig() {
+  const res = await fetch('/api/servers/config');
+  serverConfig = await res.json();
+}
+
+async function saveServerConfig() {
+  await fetch('/api/servers/config', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(serverConfig)
+  });
+  await loadServers();
+}
+
 function renderServers() {
   const servers = document.getElementById('servers');
   servers.innerHTML = '';
@@ -82,31 +111,78 @@ function renderServers() {
     const card = document.createElement('div');
     card.className = 'server-card';
     card.innerHTML = `
+      ${server.image ? `<div class="server-photo" style='background-image: ${esc(cssUrl(server.image))}'></div>` : ''}
+      <div class="tile-controls">
+        <button class="edit" title="Edit">✎</button>
+        <button class="del"  title="Remove">×</button>
+      </div>
       <div class="server-card-header">
         <div>
-          <p class="server-label">${server.host}</p>
-          <p class="server-role">${server.role}</p>
+          <p class="server-label">${esc(server.host)}</p>
+          <p class="server-role">${esc(server.role)}</p>
         </div>
-        <p class="status-pill ${server.status === 'Online' ? 'online' : 'offline'}">${server.status}</p>
+        <p class="status-pill ${server.status === 'Online' ? 'online' : 'offline'}">${esc(server.status)}</p>
       </div>
       <dl class="server-meta">
-        <dt>Model</dt><dd>${server.model}</dd>
-        <dt>OS</dt><dd>${server.os}</dd>
-        <dt>Kernel</dt><dd>${server.kernel}</dd>
-        <dt>IP</dt><dd>${server.ip}</dd>
-        <dt>Services</dt><dd>${server.services}</dd>
+        <dt>Model</dt><dd>${esc(server.model)}</dd>
+        <dt>OS</dt><dd>${esc(server.os)}</dd>
+        <dt>Kernel</dt><dd>${esc(server.kernel)}</dd>
+        <dt>IP</dt><dd>${esc(server.ip)}</dd>
+        <dt>Services</dt><dd>${esc(server.services)}</dd>
       </dl>
       <div class="server-metrics">
-        <div><strong>Uptime</strong><span>${server.uptime}</span></div>
-        <div><strong>Load</strong><span>${server.load}</span></div>
-        <div><strong>CPU</strong><span>${server.cpu}</span></div>
-        <div><strong>Memory</strong><span>${server.memory}</span></div>
-        <div><strong>Disk</strong><span>${server.disk}</span></div>
+        <div><strong>Uptime</strong><span>${esc(server.uptime)}</span></div>
+        <div><strong>Load</strong><span>${esc(server.load)}</span></div>
+        <div><strong>CPU</strong><span>${esc(server.cpu)}</span></div>
+        <div><strong>Memory</strong><span>${esc(server.memory)}</span></div>
+        <div><strong>Disk</strong><span>${esc(server.disk)}</span></div>
       </div>
-      <p class="server-fact">${server.fact}</p>
+      ${server.fact ? `<p class="server-fact">${esc(server.fact)}</p>` : ''}
     `;
+    card.querySelector('.edit').addEventListener('click', () => openServerDialog(server.id));
+    card.querySelector('.del').addEventListener('click', async () => {
+      if (!confirm(`Remove server "${server.host}"?`)) return;
+      await loadServerConfig();
+      serverConfig = serverConfig.filter(s => s.id !== server.id);
+      await saveServerConfig();
+    });
     servers.appendChild(card);
   }
+}
+
+async function openServerDialog(id) {
+  await loadServerConfig();
+  const server = serverConfig.find(s => s.id === id);
+  editingServerId = server ? server.id : null;
+  serverDialogTitle.textContent = server ? 'Edit server' : 'Add server';
+  for (const f of ['host', 'role', 'model', 'services', 'image', 'fact']) {
+    serverForm.elements[f].value = server?.[f] || '';
+  }
+  updatePreview(serverForm.elements.image, 'server-preview');
+  serverDialog.showModal();
+  setTimeout(() => serverForm.elements.host.focus(), 0);
+}
+
+serverForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const data = {};
+  for (const f of ['host', 'role', 'model', 'services', 'image', 'fact']) {
+    data[f] = serverForm.elements[f].value.trim();
+  }
+  if (!data.host) return;
+  await loadServerConfig();
+  const i = serverConfig.findIndex(s => s.id === editingServerId);
+  if (i >= 0) serverConfig[i] = { ...serverConfig[i], ...data };
+  else serverConfig.push({ id: 's' + Date.now().toString(36), ...data });
+  serverDialog.close();
+  await saveServerConfig();
+});
+
+function updatePreview(input, previewId) {
+  const el = document.getElementById(previewId);
+  const url = input.value.trim();
+  el.style.backgroundImage = url ? cssUrl(url) : '';
+  el.hidden = !url;
 }
 
 function render() {
@@ -121,9 +197,17 @@ function render() {
     a.style.setProperty('--tile-color', t.color || '#4051b5');
     a.draggable = false;
 
+    if (t.image) {
+      a.classList.add('has-image');
+      const photo = document.createElement('div');
+      photo.className = 'photo';
+      photo.style.backgroundImage = cssUrl(t.image);
+      a.appendChild(photo);
+    }
+
     const icon = document.createElement('div');
     icon.className = 'icon';
-    icon.style.background = `linear-gradient(135deg, ${t.color || '#4051b5'}, rgba(255,255,255,0.12))`;
+    if (!t.image) icon.style.background = `linear-gradient(135deg, ${t.color || '#4051b5'}, rgba(255,255,255,0.12))`;
 
     if (t.logo) {
       const img = document.createElement('img');
@@ -163,8 +247,11 @@ function render() {
       if (confirm(`Remove "${t.name}"?`)) removeTile(t.id);
     });
 
-    a.appendChild(icon);
-    a.appendChild(label);
+    const caption = document.createElement('div');
+    caption.className = 'caption';
+    caption.appendChild(icon);
+    caption.appendChild(label);
+    a.appendChild(caption);
     a.appendChild(controls);
 
     a.addEventListener('click', (e) => {
@@ -212,6 +299,7 @@ function setEditing(on) {
   editBtn.classList.toggle('active', on);
   editBtn.textContent = on ? 'Done' : 'Edit';
   addBtn.hidden = !on;
+  addServerBtn.hidden = !on;
   grid.querySelectorAll('.tile').forEach(el => el.draggable = on);
 }
 
@@ -222,6 +310,9 @@ function openDialog(tile) {
   form.elements.url.value   = tile?.url   || '';
   form.elements.color.value = tile?.color || '#4051b5';
   form.elements.icon.value  = tile?.icon  || 'link';
+  form.elements.image.value = tile?.image || '';
+  form.elements.logo.value  = tile?.logo  || '';
+  updatePreview(form.elements.image, 'tile-preview');
   dialog.showModal();
   setTimeout(() => form.elements.name.focus(), 0);
 }
@@ -238,7 +329,9 @@ form.addEventListener('submit', (e) => {
     name:  form.elements.name.value.trim(),
     url:   form.elements.url.value.trim(),
     color: form.elements.color.value,
-    icon:  form.elements.icon.value
+    icon:  form.elements.icon.value,
+    image: form.elements.image.value.trim() || null,
+    logo:  form.elements.logo.value.trim() || null
   };
   if (!data.name || !data.url) return;
 
@@ -254,6 +347,10 @@ form.addEventListener('submit', (e) => {
 });
 
 cancelBtn.addEventListener('click', () => dialog.close());
+serverCancelBtn.addEventListener('click', () => serverDialog.close());
+addServerBtn.addEventListener('click', () => openServerDialog(null));
+form.elements.image.addEventListener('input', () => updatePreview(form.elements.image, 'tile-preview'));
+serverForm.elements.image.addEventListener('input', () => updatePreview(serverForm.elements.image, 'server-preview'));
 watchdogCloseBtn.addEventListener('click', () => watchdogDialog.close());
 watchdogBtn.addEventListener('click', () => watchdogDialog.showModal());
 editBtn.addEventListener('click', () => setEditing(!editing));

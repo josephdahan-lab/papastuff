@@ -64,6 +64,7 @@
           <p class="section-label">Linux servers</p>
           <h2>Server performance</h2>
         </div>
+        <button id="add-server-btn" class="icon-btn" title="Add server" hidden>+ Add server</button>
       </div>
       <div id="servers" class="server-grid"></div>
     </section>
@@ -92,6 +93,9 @@
           <option value="server">Server</option>
         </select>
       </label>
+      <label>Picture<input name="image" list="photo-list" placeholder="/img/photos/… or https://…" /></label>
+      <label>Logo<input name="logo" list="logo-list" placeholder="optional — /img/… or https://…" /></label>
+      <div class="pic-preview" id="tile-preview"></div>
       <p class="hint">Tip: use <code>{host}</code> in the URL to substitute the current hostname (e.g. <code>http://{host}:3000</code>).</p>
       <div class="dialog-actions">
         <button value="cancel" type="button" id="cancel-btn">Cancel</button>
@@ -99,6 +103,54 @@
       </div>
     </form>
   </dialog>
+
+  <!-- Add / Edit server dialog -->
+  <dialog id="server-dialog">
+    <form method="dialog" id="server-form">
+      <h2 id="server-dialog-title">Add server</h2>
+      <label>Hostname<input name="host" required maxlength="63" placeholder="e.g. precision" /></label>
+      <label>Role<input name="role" maxlength="80" placeholder="Home server · photos · NAS" /></label>
+      <label>Model<input name="model" maxlength="80" placeholder="Dell Precision 3630 Tower" /></label>
+      <label>Services<input name="services" maxlength="120" placeholder="Immich · Jellyfin" /></label>
+      <label>Picture<input name="image" list="photo-list" placeholder="/img/photos/… or https://…" /></label>
+      <div class="pic-preview" id="server-preview"></div>
+      <label>Fun fact<textarea name="fact" rows="3" maxlength="300"></textarea></label>
+      <p class="hint">Live stats come from Glances on port 61208 of this hostname.</p>
+      <div class="dialog-actions">
+        <button value="cancel" type="button" id="server-cancel-btn">Cancel</button>
+        <button value="save"   type="submit" class="primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <datalist id="photo-list">
+    <option value="/img/photos/papastreams.jpg">Turntable</option>
+    <option value="/img/photos/jellyfin.jpg">Cinema</option>
+    <option value="/img/photos/immich.jpg">Polaroids</option>
+    <option value="/img/photos/googlephotos.jpg">Family photo</option>
+    <option value="/img/photos/papaframe.jpg">Photo frame</option>
+    <option value="/img/photos/pictureframe.jpg">Photo frame (white)</option>
+    <option value="/img/photos/transmission.jpg">Fiber optics</option>
+    <option value="/img/photos/piconnect.jpg">Raspberry Pi 4 (side)</option>
+    <option value="/img/photos/pi4.jpg">Raspberry Pi 4</option>
+    <option value="/img/photos/pi4-board.jpg">Raspberry Pi 4 (top)</option>
+    <option value="/img/photos/roadtrekker.jpg">Camper van</option>
+    <option value="/img/photos/datacenter.jpg">Data center</option>
+    <option value="/img/photos/harddrive.jpg">Hard drive</option>
+    <option value="/img/photos/livingroom.jpg">Living room TV</option>
+    <option value="/img/photos/precision.jpg">Dell Precision</option>
+    <option value="/img/photos/hpenvy.jpg">HP desktop</option>
+  </datalist>
+  <datalist id="logo-list">
+    <option value="/img/jellyfin.svg">Jellyfin</option>
+    <option value="/img/immich.svg">Immich</option>
+    <option value="/img/plex.svg">Plex</option>
+    <option value="/img/transmission.svg">Transmission</option>
+    <option value="/img/raspberrypi.svg">Raspberry Pi</option>
+    <option value="/img/youtube.svg">YouTube</option>
+    <option value="/img/googlephotos.svg">Google Photos</option>
+    <option value="/img/tailscale.svg">Tailscale</option>
+  </datalist>
 
   <!-- Watchdog instructions dialog -->
   <dialog id="watchdog-dialog">

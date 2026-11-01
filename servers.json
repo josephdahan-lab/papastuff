@@ -1,0 +1,47 @@
+[
+  {
+    "id": "s-precision",
+    "host": "precision",
+    "image": "/img/photos/precision.jpg",
+    "role": "Home server · photos · NAS",
+    "model": "Dell Precision 3630 Tower",
+    "services": "Immich · Jellyfin · PapaStreams · PapaStuff",
+    "fact": "Dell launched the Precision workstation line in 1997, aimed at engineers and 3D designers who needed more than a desktop PC."
+  },
+  {
+    "id": "s-hpenvy",
+    "host": "hpenvy",
+    "image": "/img/photos/hpenvy.jpg",
+    "role": "Main media + photo server",
+    "model": "HP Envy desktop",
+    "services": "Plex · Jellyfin · Immich",
+    "fact": "The HP Envy line debuted in 2009 — originally HP's answer to the MacBook Pro before becoming a desktop family."
+  },
+  {
+    "id": "s-josephpi4",
+    "host": "josephpi4",
+    "image": "/img/photos/pi4-board.jpg",
+    "role": "Edge node · downloads · digital frame",
+    "model": "Raspberry Pi 4 Model B (8 GB)",
+    "services": "Transmission · PapaFrame",
+    "fact": "The Raspberry Pi 4 was the first Pi capable of driving two 4K displays at once — a leap from the Pi 3's single 1080p output."
+  },
+  {
+    "id": "s-pictureframejd",
+    "host": "pictureframejd",
+    "image": "/img/photos/papaframe.jpg",
+    "role": "Digital picture frame",
+    "model": "Raspberry Pi",
+    "services": "PictureFrame",
+    "fact": "The first commercial digital picture frame, the Sony CyberFrame, launched in 2000 — it held a whopping 6 photos."
+  },
+  {
+    "id": "s-pictureframedidier2",
+    "host": "pictureframedidier2",
+    "image": "/img/photos/pictureframe.jpg",
+    "role": "Digital picture frame",
+    "model": "Raspberry Pi",
+    "services": "PictureFrame",
+    "fact": "The first commercial digital picture frame, the Sony CyberFrame, launched in 2000 — it held a whopping 6 photos."
+  }
+]
