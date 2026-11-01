@@ -391,8 +391,26 @@ function updateClocks() {
   });
 }
 
+/* French joke of the day */
+async function loadJoke() {
+  try {
+    const res = await fetch('/api/joke');
+    if (!res.ok) return;
+    const j = await res.json();
+    document.getElementById('joke-amorce').textContent = j.amorce;
+    document.getElementById('joke-chute').textContent = j.chute;
+    document.getElementById('joke-link').href = j.url;
+    const attr = document.getElementById('joke-attr');
+    attr.href = j.attribution.url;
+    attr.textContent = j.attribution.name;
+    document.getElementById('joke').hidden = false;
+  } catch { /* leave the banner hidden */ }
+}
+
 initTheme();
 updateClocks();
+loadJoke();
+setInterval(loadJoke, 60 * 60 * 1000);
 setInterval(updateClocks, 1000);
 
 loadTiles();

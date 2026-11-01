@@ -203,6 +203,38 @@ app.get('/api/servers', async (req, res) => {
   res.json(results);
 });
 
+/* ---------- French joke of the day (deviens-marrant.fr) ---------- */
+
+const JOKE_URL = 'https://deviens-marrant.fr/api/widget/v1/vanne-du-jour';
+const JOKE_RETRY_MS = 10 * 60 * 1000;
+let jokeCache = null;      // last good response
+let jokeLastTry = 0;
+
+function parisDate() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' }).format(new Date());
+}
+
+app.get('/api/joke', async (req, res) => {
+  const stale = !jokeCache || jokeCache.date !== parisDate();
+  if (stale && Date.now() - jokeLastTry > JOKE_RETRY_MS) {
+    jokeLastTry = Date.now();
+    try {
+      const r = await fetch(JOKE_URL, { signal: AbortSignal.timeout(5000) });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const j = await r.json();
+      if (!j.amorce) throw new Error('unexpected response');
+      jokeCache = {
+        date: j.date, amorce: j.amorce, chute: j.chute || '', url: j.url,
+        attribution: j.attribution || { name: 'Deviens Marrant', url: 'https://deviens-marrant.fr/' }
+      };
+    } catch (err) {
+      console.error('Joke fetch failed:', err.message);
+    }
+  }
+  if (!jokeCache) return res.status(503).json({ error: 'joke unavailable' });
+  res.json(jokeCache);
+});
+
 /* ---------- Admin: application upgrades from GitHub ---------- */
 
 const execFileP = promisify(execFile);
