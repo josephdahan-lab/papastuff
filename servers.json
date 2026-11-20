@@ -9,15 +9,6 @@
     "fact": "Dell launched the Precision workstation line in 1997, aimed at engineers and 3D designers who needed more than a desktop PC."
   },
   {
-    "id": "s-hpenvy",
-    "host": "hpenvy",
-    "image": "/img/photos/hpenvy.jpg",
-    "role": "Main media + photo server",
-    "model": "HP Envy desktop",
-    "services": "Plex · Jellyfin · Immich",
-    "fact": "The HP Envy line debuted in 2009 — originally HP's answer to the MacBook Pro before becoming a desktop family."
-  },
-  {
     "id": "s-josephpi4",
     "host": "josephpi4",
     "image": "/img/photos/pi4-board.jpg",

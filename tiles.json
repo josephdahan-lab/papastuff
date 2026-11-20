@@ -38,7 +38,7 @@
   {
     "id": "t5",
     "name": "Transmission",
-    "url": "http://hpenvy:9091",
+    "url": "http://josephpi4:9091",
     "icon": "download",
     "logo": "/img/transmission.svg",
     "color": "#009688",
@@ -73,8 +73,8 @@
   },
   {
     "id": "t8",
-    "name": "PapaMonitor (hpenvy)",
-    "url": "http://hpenvy:8088",
+    "name": "PapaMonitor (precision)",
+    "url": "http://precision:8088",
     "icon": "server",
     "color": "#2196f3",
     "image": "/img/photos/datacenter.jpg",
