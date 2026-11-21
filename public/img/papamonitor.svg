@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>PapaMonitor</title>
+  <defs>
+    <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="60" y1="70" x2="452" y2="450">
+      <stop offset="0" stop-color="#00C9A7"/>
+      <stop offset="1" stop-color="#2F6BFF"/>
+    </linearGradient>
+  </defs>
+  <!-- outer: the screen and its stand -->
+  <rect x="50" y="74" width="412" height="292" rx="76" fill="none" stroke="url(#g)" stroke-width="52"/>
+  <path d="M256,392 L256,436 M176,444 L336,444" fill="none" stroke="url(#g)" stroke-width="44" stroke-linecap="round"/>
+  <!-- inner: a heartbeat -->
+  <path d="M128,226 L192,226 L226,164 L276,290 L310,226 L384,226" fill="none" stroke="url(#g)"
+        stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

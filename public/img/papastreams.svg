@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>PapaStreams</title>
+  <defs>
+    <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="70" y1="70" x2="442" y2="442">
+      <stop offset="0" stop-color="#E91E63"/>
+      <stop offset="1" stop-color="#FF9800"/>
+    </linearGradient>
+  </defs>
+  <!-- outer: a record/stream ring, open at the top right like a signal -->
+  <path d="M398,114 A200,200 0 1,0 456,256" fill="none" stroke="url(#g)" stroke-width="56" stroke-linecap="round"/>
+  <circle cx="456" cy="150" r="28" fill="url(#g)"/>
+  <!-- inner: soft play button -->
+  <path d="M222,176 L222,336 L350,256 Z" fill="url(#g)" stroke="url(#g)" stroke-width="40" stroke-linejoin="round"/>
+</svg>

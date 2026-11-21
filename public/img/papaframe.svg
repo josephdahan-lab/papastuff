@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>PapaFrame</title>
+  <defs>
+    <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="60" y1="60" x2="452" y2="452">
+      <stop offset="0" stop-color="#FFB300"/>
+      <stop offset="1" stop-color="#FF4F7B"/>
+    </linearGradient>
+  </defs>
+  <!-- outer: the frame -->
+  <rect x="52" y="52" width="408" height="408" rx="112" fill="none" stroke="url(#g)" stroke-width="56"/>
+  <!-- inner: a photo of mountains under the sun -->
+  <circle cx="322" cy="184" r="36" fill="url(#g)"/>
+  <path d="M150,352 L226,256 Q236,244 246,256 L290,310 L318,278 Q328,268 338,278 L374,352 Z"
+        fill="url(#g)" stroke="url(#g)" stroke-width="28" stroke-linejoin="round"/>
+</svg>
