@@ -12,6 +12,9 @@ const TILES_FILE = path.join(__dirname, 'tiles.json');
 const SERVERS_FILE = path.join(__dirname, 'servers.json');
 const GLANCES_PORT = 61208;
 const GLANCES_TIMEOUT_MS = 2500;
+// Servers without Glances are read from PapaMonitor's /api/stats instead.
+const PAPAMONITOR_PORT = 8088;
+const PAPAMONITOR_TIMEOUT_MS = 8000;
 
 const DEFAULT_SERVERS = [
   {
@@ -125,6 +128,16 @@ async function fetchGlances(server) {
   }
 }
 
+async function fetchPapaMonitor(server) {
+  const res = await fetch(`http://${server.host}:${PAPAMONITOR_PORT}/api/stats`, {
+    signal: AbortSignal.timeout(PAPAMONITOR_TIMEOUT_MS)
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const live = (await res.json()).live;
+  if (!live) throw new Error('no live stats');
+  return live;
+}
+
 function pct(n) {
   return n != null && Number.isFinite(n) ? `${Math.round(n)}%` : '—';
 }
@@ -170,6 +183,35 @@ function buildServer(cfg, data) {
   };
 }
 
+// `uptime -p` text ("up 23 weeks, 1 day, 18 hours, 11 minutes") to seconds.
+function parseUptimePretty(text) {
+  const unit = { year: 31536000, month: 2592000, week: 604800, day: 86400, hour: 3600, minute: 60 };
+  let secs = 0;
+  for (const [, n, u] of String(text || '').matchAll(/(\d+)\s+(year|month|week|day|hour|minute)s?/g)) {
+    secs += Number(n) * unit[u];
+  }
+  return secs > 0 ? secs : NaN;
+}
+
+function buildServerFromMonitor(cfg, live) {
+  const num = (v) => (v === '' || v == null ? NaN : Number(v));
+  const memUsed = num(live.mem_used), memTotal = num(live.mem_total);
+  const root = (live.disks || []).find(d => d.mount === '/');
+  const load1 = num(String(live.load || '').split(/\s+/)[0]);
+  return {
+    ...cfg,
+    status: 'Online',
+    os: live.os || '—',
+    kernel: live.kernel || '—',
+    ip: live.ip || '—',
+    uptime: formatUptime(parseUptimePretty(live.uptime)),
+    cpu: pct(num(live.cpu_pct)),
+    memory: memTotal > 0 ? pct((memUsed / memTotal) * 100) : '—',
+    disk: pct(root?.pct),
+    load: Number.isFinite(load1) ? load1.toFixed(2) : '—'
+  };
+}
+
 app.get('/api/servers/config', (req, res) => {
   res.json(loadServersConfig());
 });
@@ -185,8 +227,10 @@ app.put('/api/servers/config', (req, res) => {
 app.get('/api/servers', async (req, res) => {
   const results = await Promise.all(loadServersConfig().map(async (cfg) => {
     try {
-      const data = await fetchGlances(cfg);
-      return buildServer(cfg, data);
+      return buildServer(cfg, await fetchGlances(cfg));
+    } catch {}
+    try {
+      return buildServerFromMonitor(cfg, await fetchPapaMonitor(cfg));
     } catch {
       return buildServer(cfg, null);
     }
