@@ -163,26 +163,44 @@ header {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 14px 18px;
-  text-align: center;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
 }
+.clock-face { width: 92px; height: 92px; flex: none; }
+.clock-face svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.clock-face .dial {
+  fill: #fff;
+  stroke: #dfe4ec;
+  stroke-width: 1.5;
+  filter: drop-shadow(0 2px 3px rgba(29, 35, 48, 0.22));
+  transition: fill 0.6s;
+}
+.clock-face .tick       { stroke: #b7bfcc; stroke-width: 1; stroke-linecap: round; }
+.clock-face .tick-major { stroke: #1d2330; stroke-width: 2; stroke-linecap: round; }
+.clock-face .hand       { stroke: #1d2330; stroke-linecap: round; }
+.clock-face .hour       { stroke-width: 4.5; }
+.clock-face .minute     { stroke-width: 3; }
+.clock-face .second     { stroke: #e53935; stroke-width: 1.2; }
+.clock-face .pin        { fill: #e53935; }
+/* Night in that city: navy face, light hands */
+.clock.night .dial        { fill: #1c2541; stroke: #2e3a5c; }
+.clock.night .tick        { stroke: #4a5679; }
+.clock.night .tick-major,
+.clock.night .hand:not(.second) { stroke: #e9eefc; }
+.clock-text { text-align: left; }
 .clock-city {
-  margin: 0 0 4px;
-  font-size: 11px;
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  color: var(--text-muted);
-}
-.clock-time {
-  margin: 0;
-  font-size: 26px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
-  letter-spacing: 1px;
+  color: var(--text);
 }
 .clock-date {
-  margin: 4px 0 0;
+  margin: 0;
   font-size: 12px;
   color: var(--text-muted);
 }
@@ -649,5 +667,5 @@ dialog .hint code { background: var(--code-bg); padding: 1px 5px; border-radius:
   .joke { padding: 0 16px; }
   .joke-amorce, .joke-chute { font-size: 16px; }
   main { padding: 16px 16px 48px; }
-  .clock-time { font-size: 22px; }
+  .clock-face { width: 76px; height: 76px; }
 }

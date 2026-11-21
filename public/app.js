@@ -472,20 +472,44 @@ themeBtn.addEventListener('click', () => {
 });
 
 /* Clocks */
+const CLOCK_SVG = (() => {
+  let ticks = '';
+  for (let i = 0; i < 60; i++) {
+    const major = i % 5 === 0;
+    const quarter = i % 15 === 0;
+    ticks += `<line class="${major ? 'tick-major' : 'tick'}" x1="50" y1="${quarter ? 7 : major ? 8 : 8.5}" x2="50" y2="${major ? 15 : 11}"
+      transform="rotate(${i * 6} 50 50)" ${quarter ? 'stroke-width="3"' : ''}/>`;
+  }
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">
+    <circle class="dial" cx="50" cy="50" r="46"/>
+    ${ticks}
+    <line class="hand hour"   x1="50" y1="56" x2="50" y2="28"/>
+    <line class="hand minute" x1="50" y1="58" x2="50" y2="16"/>
+    <line class="hand second" x1="50" y1="62" x2="50" y2="12"/>
+    <circle class="pin" cx="50" cy="50" r="3"/>
+  </svg>`;
+})();
+
 function updateClocks() {
   const now = new Date();
   document.querySelectorAll('.clock').forEach(el => {
     const tz = el.dataset.tz;
-    const time = new Intl.DateTimeFormat('en-GB', {
-      hour: '2-digit', minute: '2-digit', second: '2-digit',
-      hour12: false, timeZone: tz
+    const face = el.querySelector('.clock-face');
+    if (!face.firstChild) face.innerHTML = CLOCK_SVG;
+    const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {
+      hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23', timeZone: tz
+    }).formatToParts(now).map(p => [p.type, Number(p.value)]));
+    const { hour: h, minute: m, second: sec } = parts;
+    const set = (cls, deg) => face.querySelector(cls).setAttribute('transform', `rotate(${deg} 50 50)`);
+    set('.hour', (h % 12) * 30 + m * 0.5);
+    set('.minute', m * 6 + sec * 0.1);
+    set('.second', sec * 6);
+    el.classList.toggle('night', h < 7 || h >= 19);
+    const time = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone: tz }).format(now);
+    el.title = `${el.querySelector('.clock-city').textContent}: ${time}`;
+    el.querySelector('.clock-date').textContent = new Intl.DateTimeFormat('en-US', {
+      weekday: 'short', month: 'short', day: 'numeric', timeZone: tz
     }).format(now);
-    const date = new Intl.DateTimeFormat('en-US', {
-      weekday: 'short', month: 'short', day: 'numeric',
-      timeZone: tz
-    }).format(now);
-    el.querySelector('.clock-time').textContent = time;
-    el.querySelector('.clock-date').textContent = date;
   });
 }
 
