@@ -293,6 +293,8 @@ function render() {
       a.classList.add('has-image');
       const photo = document.createElement('div');
       photo.className = 'photo';
+      // An SVG logo as the picture is shown whole on white, not cropped.
+      if (/\.svg(\?|$)/i.test(t.image)) photo.classList.add('logo-pic');
       photo.style.backgroundImage = cssUrl(t.image);
       a.appendChild(photo);
     }

@@ -446,6 +446,11 @@ main {
   transition: transform 0.4s ease;
 }
 .tile.has-image:hover .photo { transform: scale(1.06); }
+.tile .photo.logo-pic {
+  background-color: #fff;
+  background-size: 52%;
+  background-position: center 38%;
+}
 .tile.has-image .caption {
   flex-direction: row;
   gap: 10px;
