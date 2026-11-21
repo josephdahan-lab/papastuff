@@ -512,6 +512,10 @@ body.editing .tile-controls { display: flex; }
 .tile-controls .del   { background: var(--danger); }
 .tile-controls .edit:hover { background: rgba(0,0,0,0.8); }
 .tile-controls .del:hover  { background: #ff5252; }
+.tile-controls .move  { background: rgba(0,0,0,0.55); font-size: 11px; }
+.tile-controls .move:hover { background: rgba(0,0,0,0.8); }
+.server-card:first-child .move[data-dir="-1"],
+.server-card:last-child  .move[data-dir="1"] { visibility: hidden; }
 
 /* Dialog */
 dialog {

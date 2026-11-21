@@ -113,6 +113,8 @@ function renderServers() {
     card.innerHTML = `
       ${server.image ? `<div class="server-photo" style='background-image: ${esc(cssUrl(server.image))}'></div>` : ''}
       <div class="tile-controls">
+        <button class="move" data-dir="-1" title="Move left">◀</button>
+        <button class="move" data-dir="1"  title="Move right">▶</button>
         <button class="edit" title="Edit">✎</button>
         <button class="del"  title="Remove">×</button>
       </div>
@@ -140,6 +142,9 @@ function renderServers() {
       ${server.fact ? `<p class="server-fact">${esc(server.fact)}</p>` : ''}
     `;
     card.querySelector('.edit').addEventListener('click', () => openServerDialog(server.id));
+    for (const btn of card.querySelectorAll('.move')) {
+      btn.addEventListener('click', () => moveServer(server.id, Number(btn.dataset.dir)));
+    }
     card.querySelector('.del').addEventListener('click', async () => {
       if (!confirm(`Remove server "${server.host}"?`)) return;
       await loadServerConfig();
@@ -148,6 +153,23 @@ function renderServers() {
     });
     servers.appendChild(card);
   }
+}
+
+async function moveServer(id, dir) {
+  await loadServerConfig();
+  const i = serverConfig.findIndex(s => s.id === id);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= serverConfig.length) return;
+  [serverConfig[i], serverConfig[j]] = [serverConfig[j], serverConfig[i]];
+  // Reorder the cards already on screen right away; stats don't change.
+  const order = serverConfig.map(s => s.id);
+  SERVERS.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+  renderServers();
+  await fetch('/api/servers/config', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(serverConfig)
+  });
 }
 
 async function openServerDialog(id) {
