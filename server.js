@@ -216,13 +216,52 @@ app.get('/api/servers/config', (req, res) => {
   res.json(loadServersConfig());
 });
 
-app.put('/api/servers/config', (req, res) => {
+app.put('/api/servers/config', async (req, res) => {
   if (!Array.isArray(req.body) || !req.body.every(s => s && typeof s.host === 'string' && s.host.trim())) {
     return res.status(400).json({ error: 'expected array of servers with a host' });
   }
+  const failed = [];
+  for (const s of req.body) {
+    if (!(await locateServer(s))) failed.push(s.host);
+  }
   saveServersConfig(req.body);
-  res.json({ ok: true });
+  res.json({ ok: true, ...(failed.length && { notFound: failed }) });
 });
+
+/* ---------- Server locations for the map ---------- */
+
+// Fills in lat/lon from the free-text `location` ("Marseille, France", or
+// "43.29, 5.37"). Looks a place up only when its text changed since the last
+// lookup (`geoFor`), so OpenStreetMap is asked once per new location.
+// Returns false when the location could not be found.
+async function locateServer(s) {
+  const loc = typeof s.location === 'string' ? s.location.trim() : '';
+  if (!loc) {
+    delete s.lat; delete s.lon; delete s.geoFor;
+    return true;
+  }
+  if (s.geoFor === loc && Number.isFinite(s.lat) && Number.isFinite(s.lon)) return true;
+  const m = loc.match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+  if (m) {
+    Object.assign(s, { lat: Number(m[1]), lon: Number(m[2]), geoFor: loc });
+    return true;
+  }
+  try {
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(loc);
+    const r = await fetch(url, {
+      headers: { 'User-Agent': 'PapaStuff/1.0 (self-hosted home dashboard)' },
+      signal: AbortSignal.timeout(8000)
+    });
+    const hit = r.ok ? (await r.json())[0] : null;
+    if (!hit) throw new Error('no match');
+    Object.assign(s, { lat: Number(hit.lat), lon: Number(hit.lon), geoFor: loc });
+    return true;
+  } catch (err) {
+    console.error(`Geocoding "${loc}" failed:`, err.message);
+    delete s.lat; delete s.lon; delete s.geoFor;
+    return false;
+  }
+}
 
 app.get('/api/servers', async (req, res) => {
   const results = await Promise.all(loadServersConfig().map(async (cfg) => {

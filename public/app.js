@@ -96,15 +96,85 @@ async function loadServerConfig() {
 }
 
 async function saveServerConfig() {
-  await fetch('/api/servers/config', {
+  const res = await fetch('/api/servers/config', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(serverConfig)
   });
+  const result = await res.json().catch(() => ({}));
+  if (result.notFound?.length) {
+    alert(`Couldn't find the location of: ${result.notFound.join(', ')}.\nTry "City, country", or enter coordinates as "lat, lon".`);
+  }
   await loadServers();
 }
 
+/* ---------- Server map ---------- */
+
+let serverMap = null;
+let serverMapLayer = null;
+let serverMapTiles = null;
+
+function setMapTiles() {
+  if (!serverMap || serverMapTiles) return;
+  // OpenStreetMap's own tiles need no API key; dark mode darkens them in CSS.
+  serverMapTiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(serverMap);
+}
+
+function renderServerMap() {
+  const wrap = document.getElementById('server-map-wrap');
+  const located = SERVERS.filter(s => Number.isFinite(s.lat) && Number.isFinite(s.lon));
+  wrap.hidden = located.length === 0 || typeof L === 'undefined';
+  if (wrap.hidden) return;
+
+  const first = !serverMap;
+  if (first) {
+    serverMap = L.map('server-map', { scrollWheelZoom: false, worldCopyJump: true });
+    setMapTiles();
+    serverMapLayer = L.layerGroup().addTo(serverMap);
+  }
+  serverMapLayer.clearLayers();
+
+  // Servers in the same place share one dot.
+  const places = new Map();
+  for (const s of located) {
+    const key = `${s.lat.toFixed(3)},${s.lon.toFixed(3)}`;
+    if (!places.has(key)) places.set(key, { lat: s.lat, lon: s.lon, servers: [] });
+    places.get(key).servers.push(s);
+  }
+  // Labels of nearby places go on opposite sides so they don't overlap.
+  const labelled = [];
+  for (const p of places.values()) {
+    const near = labelled.find(q => Math.abs(q.lat - p.lat) < 3 && Math.abs(q.lon - p.lon) < 6);
+    p.side = near && near.side === 'right' ? 'left' : 'right';
+    labelled.push(p);
+  }
+  for (const p of places.values()) {
+    const allUp = p.servers.every(s => s.status === 'Online');
+    const color = allUp ? '#2e9d4f' : '#d63b3b';
+    const marker = L.circleMarker([p.lat, p.lon], {
+      radius: 8 + 2 * Math.min(p.servers.length - 1, 3),
+      color: '#fff', weight: 2, fillColor: color, fillOpacity: 0.9
+    }).addTo(serverMapLayer);
+    marker.bindTooltip(p.servers.map(s => esc(s.host)).join('<br>'),
+      { permanent: true, direction: p.side, offset: [p.side === 'right' ? 10 : -10, 0], className: 'server-map-label' });
+    marker.bindPopup(
+      `<strong>${esc(p.servers[0].location || '')}</strong><br>` +
+      p.servers.map(s => `${esc(s.host)} — ${esc(s.status)}${s.status === 'Online' ? ` · CPU ${esc(s.cpu)}` : ''}`).join('<br>')
+    );
+  }
+  if (first) {
+    const pts = [...places.values()].map(p => [p.lat, p.lon]);
+    if (pts.length === 1) serverMap.setView(pts[0], 9);
+    else serverMap.fitBounds(pts, { padding: [40, 40], maxZoom: 9 });
+  }
+  setTimeout(() => serverMap.invalidateSize(), 0);
+}
+
 function renderServers() {
+  renderServerMap();
   const servers = document.getElementById('servers');
   servers.innerHTML = '';
   for (const server of SERVERS) {
@@ -177,7 +247,7 @@ async function openServerDialog(id) {
   const server = serverConfig.find(s => s.id === id);
   editingServerId = server ? server.id : null;
   serverDialogTitle.textContent = server ? 'Edit server' : 'Add server';
-  for (const f of ['host', 'role', 'model', 'services', 'image', 'fact']) {
+  for (const f of ['host', 'role', 'model', 'services', 'location', 'image', 'fact']) {
     serverForm.elements[f].value = server?.[f] || '';
   }
   updatePreview(serverForm.elements.image, 'server-preview');
@@ -188,7 +258,7 @@ async function openServerDialog(id) {
 serverForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const data = {};
-  for (const f of ['host', 'role', 'model', 'services', 'image', 'fact']) {
+  for (const f of ['host', 'role', 'model', 'services', 'location', 'image', 'fact']) {
     data[f] = serverForm.elements[f].value.trim();
   }
   if (!data.host) return;

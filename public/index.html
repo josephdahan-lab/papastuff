@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PapaStuff</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%235b6eea'/><text x='50' y='68' font-size='58' font-weight='bold' font-family='Arial,sans-serif' fill='white' text-anchor='middle'>PS</text></svg>">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
@@ -75,6 +76,10 @@
         <button id="add-server-btn" class="icon-btn" title="Add server" hidden>+ Add server</button>
       </div>
       <div id="servers" class="server-grid"></div>
+      <div id="server-map-wrap" class="server-map-wrap" hidden>
+        <p class="section-label">Where they live</p>
+        <div id="server-map" class="server-map"></div>
+      </div>
     </section>
   </main>
 
@@ -120,10 +125,11 @@
       <label>Role<input name="role" maxlength="80" placeholder="Home server · photos · NAS" /></label>
       <label>Model<input name="model" maxlength="80" placeholder="Dell Precision 3630 Tower" /></label>
       <label>Services<input name="services" maxlength="120" placeholder="Immich · Jellyfin" /></label>
+      <label>Location<input name="location" maxlength="120" placeholder="City, country — or lat, lon" /></label>
       <label>Picture<input name="image" list="photo-list" placeholder="/img/photos/… or https://…" /></label>
       <div class="pic-preview" id="server-preview"></div>
       <label>Fun fact<textarea name="fact" rows="3" maxlength="300"></textarea></label>
-      <p class="hint">Live stats come from Glances on port 61208 of this hostname.</p>
+      <p class="hint">Live stats come from Glances (port 61208) or PapaMonitor (port 8088) on this hostname. The location places the server on the map.</p>
       <div class="dialog-actions">
         <button value="cancel" type="button" id="server-cancel-btn">Cancel</button>
         <button value="save"   type="submit" class="primary">Save</button>
@@ -183,6 +189,7 @@
     </form>
   </dialog>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

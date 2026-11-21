@@ -217,6 +217,28 @@ main {
   letter-spacing: 0.2em;
 }
 
+.server-map-wrap { margin-top: 28px; }
+.server-map {
+  height: 380px;
+  border-radius: var(--tile-radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  z-index: 0;
+}
+.server-map-label {
+  background: var(--bg-elev);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-weight: 600;
+  box-shadow: none;
+}
+.server-map-label::before { display: none; }
+:root:not([data-theme="light"]) .server-map .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9);
+}
+.server-map.leaflet-container { background: var(--bg-elev); }
+@media (max-width: 600px) { .server-map { height: 280px; } }
+
 .server-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
