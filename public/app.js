@@ -295,7 +295,10 @@ function render() {
       photo.className = 'photo';
       // A logo as the picture (an .svg, or a file named *-logo.*) is shown
       // whole on white, not cropped.
-      if (/(\.svg|-logo\.\w+)(\?|$)/i.test(t.image)) photo.classList.add('logo-pic');
+      if (/(\.svg|-logo\.\w+)(\?|$)/i.test(t.image)) {
+        photo.classList.add('logo-pic');
+        a.classList.add('logo-tile');
+      }
       photo.style.backgroundImage = cssUrl(t.image);
       a.appendChild(photo);
     }

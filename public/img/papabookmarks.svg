@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>PapaBookmarks</title>
+  <defs>
+    <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="80" y1="40" x2="432" y2="472">
+      <stop offset="0" stop-color="#7C4DFF"/>
+      <stop offset="1" stop-color="#E040FB"/>
+    </linearGradient>
+  </defs>
+  <!-- outer: a bookmark ribbon -->
+  <path d="M150,48 L362,48 Q414,48 414,100 L414,446 Q414,470 394,456 L256,360 L118,456 Q98,470 98,446 L98,100 Q98,48 150,48 Z"
+        fill="none" stroke="url(#g)" stroke-width="50" stroke-linejoin="round"/>
+  <!-- inner: a star -->
+  <path d="M256,130 L281,190 L345,195 L296,237 L311,300 L256,266 L201,300 L216,237 L167,195 L231,190 Z"
+        fill="url(#g)" stroke="url(#g)" stroke-width="22" stroke-linejoin="round"/>
+</svg>

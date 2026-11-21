@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>MaxiStreams</title>
+  <defs>
+    <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="60" y1="60" x2="452" y2="452">
+      <stop offset="0" stop-color="#FF1744"/>
+      <stop offset="1" stop-color="#7C4DFF"/>
+    </linearGradient>
+  </defs>
+  <!-- outer: a TV with rabbit-ear antenna -->
+  <path d="M190,60 L256,126 L322,60" fill="none" stroke="url(#g)" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="48" y="138" width="416" height="310" rx="84" fill="none" stroke="url(#g)" stroke-width="52"/>
+  <!-- inner: play -->
+  <path d="M220,226 L220,360 L328,293 Z" fill="url(#g)" stroke="url(#g)" stroke-width="36" stroke-linejoin="round"/>
+</svg>

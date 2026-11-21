@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>PapaBackup</title>
+  <defs>
+    <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="70" y1="70" x2="442" y2="442">
+      <stop offset="0" stop-color="#8BC34A"/>
+      <stop offset="1" stop-color="#00897B"/>
+    </linearGradient>
+  </defs>
+  <!-- outer: a "restore" arrow circling back -->
+  <path d="M100,206 A168,168 0 1,1 120,356" fill="none" stroke="url(#g)" stroke-width="52" stroke-linecap="round"/>
+  <path d="M52,160 L98,236 L172,190 Z" fill="url(#g)" stroke="url(#g)" stroke-width="24" stroke-linejoin="round"/>
+  <!-- inner: a stack of disks -->
+  <rect x="190" y="178" width="148" height="44" rx="22" fill="url(#g)"/>
+  <rect x="190" y="240" width="148" height="44" rx="22" fill="url(#g)"/>
+  <rect x="190" y="302" width="148" height="44" rx="22" fill="url(#g)"/>
+</svg>
